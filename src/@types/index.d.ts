@@ -2,7 +2,7 @@ import { MongoClientOptions } from 'mongodb'
 
 export type Username = string;
 export type Password = string;
-export type Host = string | Array<Host>;
+export type Host = string | Array<string>;
 export type Database = string;
 export type Options = MongoClientOptions;
 

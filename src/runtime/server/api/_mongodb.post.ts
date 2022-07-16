@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
   }
   const mongoClient = new MongoClient(cs)
   const reqDatabase = bodyDatabase || mongoParams.database
-  const reqCollection = bodyCollection || mongoParams.collection || 'images'
+  const reqCollection = bodyCollection || mongoParams.collection
   async function run () {
     try {
       await mongoClient.connect()

@@ -12,12 +12,8 @@ export const getConnectionString = (params: ConnectionStringParams): string => {
   const usernameEncoded = username ? encodeURIComponent(username) : null
   const passwordEncoded = password ? encodeURIComponent(password) : null
 
-  // stringify host+ports
-  const hostStr = host?.map((host) => {
-    return host.port
-      ? `${host.host}:${host.port}`
-      : `${host.host}`
-  }).join(',')
+  // if host = Array: host turns in comma-seperated string
+  const hostStr = typeof host !== 'string' && host?.length > 0 ? host.join(',') : host
 
   // optional user params
   const userStr = usernameEncoded && passwordEncoded ? `${usernameEncoded}:${passwordEncoded}@` : ''

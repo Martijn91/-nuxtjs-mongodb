@@ -14,13 +14,13 @@ export default defineNuxtModule<ModuleOptions>({
   },
   defaults: {
     addPlugin: true,
-    uri: process.env.MONGODB_URI || null,
-    username: process.env.MONGODB_USERNAME || null,
-    password: process.env.MONGODB_PASSWORD || null,
-    host: process.env.MONGODB_HOST || null,
-    database: process.env.MONGODB_DATABASE || null,
-    options: process.env.MONGODB_OPTIONS || null,
-    clusterUrl: process.env.MONGODB_CLUSTER_URL || null
+    uri: null,
+    username: null,
+    password: null,
+    host: null,
+    database: null,
+    options: null,
+    apiServerRoute: '/api/_mongodb/operate'
   },
 
   setup (options, nuxt) {
@@ -29,14 +29,14 @@ export default defineNuxtModule<ModuleOptions>({
     runtimeConfig.mongo = { cs: null, params: null, options: null }
 
     if (options.uri) {
-      runtimeConfig.mongo.cs = options.uri
+      runtimeConfig.mongo.cs = process.env.MONGODB_URI || options.uri
     } else {
       const params = {
-        username: options.username,
-        password: options.password,
-        host: options.host,
-        database: options.database,
-        options: options.options
+        username: process.env.MONGODB_USERNAME || options.username,
+        password: process.env.MONGODB_PASSWORD || options.password,
+        host: process.env.MONGODB_HOST || options.host,
+        database: process.env.MONGODB_DATABASE || options.database,
+        options: process.env.MONGODB_OPTIONS || options.options
       }
 
       const cs: string = getConnectionString(params)
@@ -48,7 +48,7 @@ export default defineNuxtModule<ModuleOptions>({
     nuxt.options.build.transpile.push(runtimeDir)
     addPlugin(resolve(runtimeDir, 'plugins/plugin'))
     addServerHandler({
-      route: '/api/_mongodb/operate',
+      route: options.apiServerRoute,
       handler: resolve(runtimeDir, 'server/api/_mongodb.post')
     })
   }
