@@ -1,3 +1,6 @@
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/MongoDB_Logo.svg/2560px-MongoDB_Logo.svg.png" alt="MongoDB" height="150" />
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Nuxt_logo.svg/1200px-Nuxt_logo.svg.png" alt="Nuxt" height="150" />
+
 # MongoDB Nuxt Module
 
 MongoDB Nuxt (3) Module to connect Nuxt Front-end to a MongoDB Database using Nitro server engine and global defined Nuxt plugins for a fast, easy and extensive integration.
@@ -5,10 +8,11 @@ MongoDB Nuxt (3) Module to connect Nuxt Front-end to a MongoDB Database using Ni
 
 ## Key Features
 
-- Easy integration by adding full Connection String within Nuxt Options, or add credentials / params to let module auto-generate the connection string
-- Default API endpoint implemeneted for communication to Nitro server where requests get handled towards MongoDB
-- Request handling from Nitro server to MongoDB to keep credentials safe and serverside all the time
-- Out of the box Nuxt plugins added by module for easy implementation within clientside and execute CRUD operation
+- Easy integration by adding full Connection String or add credentials / params
+- Auto-generating URI / connection string
+- Default server route implemented for communication to Nitro server where requests get handled towards MongoDB
+- Request handling by Nitro server to keep credentials SSR and safe
+- Out of the box Nuxt plugins added for easy implementation within clientside and execute CRUD operation
 - Nuxt 3 support
 
 
