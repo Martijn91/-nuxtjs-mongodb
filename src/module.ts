@@ -2,7 +2,6 @@ import { fileURLToPath } from 'url'
 
 import { defineNuxtModule, createResolver, addPlugin, addServerHandler } from '@nuxt/kit'
 import { ModuleOptions } from '@nuxt/schema'
-import * as mongoTypes from 'mongodb'
 import { getConnectionString } from './utils/getConnectionString'
 
 export default defineNuxtModule<ModuleOptions>({
@@ -20,34 +19,33 @@ export default defineNuxtModule<ModuleOptions>({
     password: null,
     host: null,
     database: null,
-    options: null,
+    collection: null,
+    options: {},
     apiServerRoute: '/api/_mongodb/operate'
   },
 
   async setup (options, nuxt) {
     const { resolve } = createResolver(import.meta.url)
     const runtimeConfig = nuxt.options.runtimeConfig
-    runtimeConfig.mongo = { cs: null, params: null, options: null }
 
     const { Collection } = await import('mongodb')
     const operations = Object.getOwnPropertyNames(Collection.prototype)
     runtimeConfig.public.mongo = { operations }
 
-    if (options.uri) {
-      runtimeConfig.mongo.cs = process.env.MONGODB_URI || options.uri
-    } else {
-      const params = {
-        username: process.env.MONGODB_USERNAME || options.username,
-        password: process.env.MONGODB_PASSWORD || options.password,
-        host: process.env.MONGODB_HOST || options.host,
-        database: process.env.MONGODB_DATABASE || options.database,
-        options: process.env.MONGODB_OPTIONS || options.options
-      }
-
-      const cs: string = getConnectionString(params)
-      runtimeConfig.mongo.cs = cs
-      runtimeConfig.mongo.params = params
+    const params = {
+      uri: process.env.MONGODB_URI || options.uri,
+      username: process.env.MONGODB_USERNAME || options.username,
+      password: process.env.MONGODB_PASSWORD || options.password,
+      host: process.env.MONGODB_HOST || options.host,
+      collection: process.env.MONGODB_COLLECTION || options.collection,
+      database: process.env.MONGODB_DATABASE || options.database,
+      options: process.env.MONGODB_OPTIONS || options.options
     }
+
+    const cs = getConnectionString(params)
+    if (!runtimeConfig.mongo) { runtimeConfig.mongo = {} }
+    runtimeConfig.mongo.cs = cs
+    runtimeConfig.mongo.params = params
 
     nuxt.options.build.transpile.push(
       'mongodb'

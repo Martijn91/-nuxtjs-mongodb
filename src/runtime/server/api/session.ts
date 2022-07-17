@@ -18,12 +18,7 @@ export default defineEventHandler(async (event) => {
     database?: string;
     collection?: string;
     option: string;
-    payload?: {
-      mongoOption: string;
-      database?: string;
-      collection?: string;
-      payload?: Record<string | number | symbol, any>
-    }
+    payload?: Record<string | number | symbol, any>
   }
 
   const requestData: RequestData = {
@@ -35,32 +30,26 @@ export default defineEventHandler(async (event) => {
   }
 
   async function run (req) {
-    const option = req.mongoOption
-    const payload = req.payload
-
-    const mongoRequest = async (client: MongoClient) => {
-      if (!req.database && !req.collection) {
-        const res = await client[option](payload)
+    try {
+      await req.client.connect()
+      if (req.database === null && req.collection === null) {
+        const res = await req.client[req.option](req.payload)
         return res
-      } else if (!req.collection === null && req.database) {
-        const database = await client.db(req.database)
-        const res = await database[option](payload)
+      } else if (req.collection !== null && req.database === null) {
+        const database = req.client.db(req.database)
+        const res = await database[req.option](req.payload)
         return res
-      } else if (!req.database === null && req.collection) {
-        const collection = await client.db('Cluster0').collection(req.collection)
-        const res = await collection[option](payload)
+      } else if (req.database !== null && req.collection === null) {
+        const database = req.client.db('Cluster0')
+        const coll = database.collection(req.collection)
+        const res = await coll[req.option](req.payload)
         return res
       } else {
-        const database = await client.db(req.database)
-        const collection = await database.collection(req.collection)
-        const res = await collection[option](payload)
+        const database = req.client.db(req.database)
+        const coll = await database.collection(req.collection)
+        const res = await coll[req.option](req.payload)
         return res
       }
-    }
-    try {
-      const client = await req.client.connect()
-      const res = await mongoRequest(client)
-      return res
     } catch (e) {
       throw new Error(e)
     } finally {

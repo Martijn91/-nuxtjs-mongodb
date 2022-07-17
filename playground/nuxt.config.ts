@@ -17,6 +17,7 @@ export default defineNuxtConfig({
     //   w: 'majority'
     // },
     // addPlugin: true
+    database: 'Cluster0',
     uri: 'mongodb+srv://admin:admin@cluster0.yivu2fz.mongodb.net/?retryWrites=true&w=majority'
   }
 })
