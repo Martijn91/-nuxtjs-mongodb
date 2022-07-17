@@ -9,9 +9,7 @@ export default defineNuxtConfig({
 
     username: 'martijnwennekes',
     password: '1234',
-    hosts: [{
-      host: 'webblox.quobw.mongodb.net'
-    }],
+    host: 'webblox.quobw.mongodb.net',
     database: 'myFirstDatabase',
     options: {
       retryWrites: true,
