@@ -1,4 +1,7 @@
 {
   "private": true,
-  "name": "@nuxtjs/mongodb-playground"
+  "name": "@nuxtjs/mongodb-playground",
+  "devDependencies": {
+    "@nuxtjs/tailwindcss": "^5.3.0"
+  }
 }

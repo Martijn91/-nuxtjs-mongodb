@@ -2,6 +2,7 @@ import { fileURLToPath } from 'url'
 
 import { defineNuxtModule, createResolver, addPlugin, addServerHandler } from '@nuxt/kit'
 import { ModuleOptions } from '@nuxt/schema'
+import * as mongoTypes from 'mongodb'
 import { getConnectionString } from './utils/getConnectionString'
 
 export default defineNuxtModule<ModuleOptions>({
@@ -23,10 +24,14 @@ export default defineNuxtModule<ModuleOptions>({
     apiServerRoute: '/api/_mongodb/operate'
   },
 
-  setup (options, nuxt) {
+  async setup (options, nuxt) {
     const { resolve } = createResolver(import.meta.url)
     const runtimeConfig = nuxt.options.runtimeConfig
     runtimeConfig.mongo = { cs: null, params: null, options: null }
+
+    const { Collection } = await import('mongodb')
+    const operations = Object.getOwnPropertyNames(Collection.prototype)
+    runtimeConfig.public.mongo = { operations }
 
     if (options.uri) {
       runtimeConfig.mongo.cs = process.env.MONGODB_URI || options.uri
@@ -44,12 +49,15 @@ export default defineNuxtModule<ModuleOptions>({
       runtimeConfig.mongo.params = params
     }
 
+    nuxt.options.build.transpile.push(
+      'mongodb'
+    )
     const runtimeDir = fileURLToPath(new URL('./runtime', import.meta.url))
     nuxt.options.build.transpile.push(runtimeDir)
     addPlugin(resolve(runtimeDir, 'plugins/plugin'))
     addServerHandler({
       route: options.apiServerRoute,
-      handler: resolve(runtimeDir, 'server/api/_mongodb.post')
+      handler: resolve(runtimeDir, 'server/api/session')
     })
   }
 })
