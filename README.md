@@ -118,7 +118,7 @@ const { $mongo } = useNuxtApp()
 $mongo.[operation](arg1: Payload, arg2: Collection, arg3: Database)
 ```
 
-#### Example usage
+### Example usage
 ```vue
 const { $mongo } = useNuxtApp()
 const { data } = await $mongo.find({ name: 'Riviera Caterer' }, 'restaurants')
