@@ -120,8 +120,10 @@ $mongo.[operation](arg1: Payload, arg2: Collection, arg3: Database)
 
 ### Example usage
 ```vue
+<script setup>
 const { $mongo } = useNuxtApp()
 const { data } = await $mongo.find({ name: 'Riviera Caterer' }, 'restaurants')
+</script>
 ```
 
 Please visit <a href="https://www.mongodb.com/docs/manual/crud/">the official MongoDB docs</a> for a complete overview of operations.
