@@ -102,6 +102,29 @@ export default defineNuxtConfig({
 ```
 Please visit <a href="https://www.mongodb.com/docs/drivers/node/current/fundamentals/connection/connection-options/#std-label-node-connection-options">the official MongoDB docs</a> for a complete overview of options
 
+## Plugin usage
+
+In order to use plugin, the global `$mongo` variable is exposed. This variable hooks into your database and can operate on it's given collection by making direct usage of Mongo DB's collection operations.
+
+### Retrieve plugin in Vue Composition API setup
+```vue
+<script setup>
+const { $mongo } = useNuxtApp()
+</script>
+```
+
+#### Plugin syntax
+```vue
+$mongo.[operation](arg1: Payload, arg2: Collection, arg3: Database)
+```
+
+#### Example usage
+```vue
+const { $mongo } = useNuxtApp()
+const { data } = await $mongo.find({ name: 'Riviera Caterer' }, 'restaurants')
+```
+
+Please visit <a href="https://www.mongodb.com/docs/manual/crud/">the official MongoDB docs</a> for a complete overview of operations.
 
 ## Development
 
