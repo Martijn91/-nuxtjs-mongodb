@@ -37,6 +37,18 @@ export default defineNuxtPlugin(() => {
     }
   })
 
+  function MongoFunction (parameter) {
+    this.name = parameter
+    if (typeof parameter === 'function') {
+      return []
+    }
+    return { [parameter]: MongoFunction }
+  }
+
+  const parameterFunction = async (parameter) => {
+    return await parameter(MongoFunction)
+  }
+
   return {
     provide: {
       mongo

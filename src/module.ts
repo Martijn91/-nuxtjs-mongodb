@@ -4,6 +4,8 @@ import { defineNuxtModule, createResolver, addPlugin, addServerHandler } from '@
 import { ModuleOptions } from '@nuxt/schema'
 import { getConnectionString } from './utils/getConnectionString'
 
+import _getDatabaseList from './utils/getDatabaseList'
+
 export default defineNuxtModule<ModuleOptions>({
   meta: {
     name: '@nuxtjs/mongodb',
@@ -21,16 +23,21 @@ export default defineNuxtModule<ModuleOptions>({
     database: null,
     collection: null,
     options: {},
-    apiServerRoute: '/api/_mongodb/operate'
+    composables: false,
+    serverRoute: '/api/_mongodb/operate'
   },
 
   async setup (options, nuxt) {
     const { resolve } = createResolver(import.meta.url)
     const runtimeConfig = nuxt.options.runtimeConfig
 
+    nuxt.options.build.transpile.push(
+      'mongodb'
+    )
     const { Collection } = await import('mongodb')
+    const serverRoute = process.env.MONGODB_SERVER_ROUTE || options.serverRoute
     const operations = Object.getOwnPropertyNames(Collection.prototype)
-    runtimeConfig.public.mongo = { operations }
+    runtimeConfig.public.mongo = { operations, serverRoute }
 
     const params = {
       uri: process.env.MONGODB_URI || options.uri,
@@ -43,18 +50,23 @@ export default defineNuxtModule<ModuleOptions>({
     }
 
     const cs = getConnectionString(params)
+
     if (!runtimeConfig.mongo) { runtimeConfig.mongo = {} }
     runtimeConfig.mongo.cs = cs
     runtimeConfig.mongo.params = params
 
-    nuxt.options.build.transpile.push(
-      'mongodb'
-    )
+    // enable auto-import databases for generating composables when true
+    if (options.composables) {
+      const databaseList = await _getDatabaseList(cs)
+
+      runtimeConfig.mongo.databaseList = databaseList
+    }
+
     const runtimeDir = fileURLToPath(new URL('./runtime', import.meta.url))
     nuxt.options.build.transpile.push(runtimeDir)
     addPlugin(resolve(runtimeDir, 'plugins/plugin'))
     addServerHandler({
-      route: options.apiServerRoute,
+      route: serverRoute,
       handler: resolve(runtimeDir, 'server/api/session')
     })
   }
