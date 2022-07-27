@@ -37,21 +37,20 @@ export default defineNuxtPlugin(() => {
     }
   })
 
-  function MongoFunction (parameter) {
-    this.name = parameter
-    if (typeof parameter === 'function') {
-      return []
-    }
-    return { [parameter]: MongoFunction }
-  }
+  // function MongoFunction (parameter) {
+  //   this.name = parameter
+  //   if (typeof parameter === 'function') {
+  //     return []
+  //   }
+  //   return { [parameter]: MongoFunction }
+  // }
 
-  const parameterFunction = async (parameter) => {
-    return await parameter(MongoFunction)
-  }
-
+  // const parameterFunction = async (parameter) => {
+  //   return await parameter(MongoFunction)
+  // }
   return {
     provide: {
-      mongo
+      mongo: runtimeConfig.public.mongo.databaseList
     }
   }
 })

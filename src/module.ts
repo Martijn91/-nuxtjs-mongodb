@@ -23,7 +23,7 @@ export default defineNuxtModule<ModuleOptions>({
     database: null,
     collection: null,
     options: {},
-    composables: false,
+    pluginFactory: true,
     serverRoute: '/api/_mongodb/operate'
   },
 
@@ -31,14 +31,24 @@ export default defineNuxtModule<ModuleOptions>({
     const { resolve } = createResolver(import.meta.url)
     const runtimeConfig = nuxt.options.runtimeConfig
 
-    nuxt.options.build.transpile.push(
-      'mongodb'
-    )
-    const { Collection } = await import('mongodb')
-    const serverRoute = process.env.MONGODB_SERVER_ROUTE || options.serverRoute
-    const operations = Object.getOwnPropertyNames(Collection.prototype)
-    runtimeConfig.public.mongo = { operations, serverRoute }
+    /**
+     * Fetch base mongodb func
+     */
+    const { Collection, Db } = await import('mongodb')
+    const collectionFunctions = Object.getOwnPropertyNames(Collection.prototype)
+    const dbFunctions = Object.getOwnPropertyNames(Db.prototype)
 
+    /**
+     * Set base mongodb func
+     */
+    runtimeConfig.mongo = {
+      classes: { Collection, Db },
+      functions: { collectionFunctions, dbFunctions }
+    }
+
+    /**
+     * Module params
+     */
     const params = {
       uri: process.env.MONGODB_URI || options.uri,
       username: process.env.MONGODB_USERNAME || options.username,
@@ -46,27 +56,42 @@ export default defineNuxtModule<ModuleOptions>({
       host: process.env.MONGODB_HOST || options.host,
       collection: process.env.MONGODB_COLLECTION || options.collection,
       database: process.env.MONGODB_DATABASE || options.database,
-      options: process.env.MONGODB_OPTIONS || options.options
+      options: process.env.MONGODB_OPTIONS || options.options,
+      serverRoute: process.env.MONGODB_SERVER_ROUTE || options.serverRoute
     }
 
+    /**
+     * Connection string creation
+     */
     const cs = getConnectionString(params)
-
     if (!runtimeConfig.mongo) { runtimeConfig.mongo = {} }
     runtimeConfig.mongo.cs = cs
     runtimeConfig.mongo.params = params
 
-    // enable auto-import databases for generating composables when true
-    if (options.composables) {
+    /**
+     * Set database + collection data
+     */
+    // plugin factory (auto import) (@requires admin uri)
+    if (options.pluginFactory) {
       const databaseList = await _getDatabaseList(cs)
-
       runtimeConfig.mongo.databaseList = databaseList
+
+    // manual plugin config (requires database + collection options)
+    } else {
+      console.log('manual')
     }
 
     const runtimeDir = fileURLToPath(new URL('./runtime', import.meta.url))
     nuxt.options.build.transpile.push(runtimeDir)
-    addPlugin(resolve(runtimeDir, 'plugins/plugin'))
+    addPlugin(resolve(runtimeDir, 'plugins/pluginFactory'))
+    // addPlugin(resolve(runtimeDir, 'plugins/plugin'))
+
+    /**
+     * Server middleware
+     */
+    runtimeConfig.public.mongo = { serverRoute: options.serverRoute }
     addServerHandler({
-      route: serverRoute,
+      route: options.serverRoute,
       handler: resolve(runtimeDir, 'server/api/session')
     })
   }

@@ -1,8 +1,8 @@
 import { MongoClient } from 'mongodb'
 
 export default async (cs: string) => {
+  const client = await MongoClient.connect(cs)
   try {
-    const client = await MongoClient.connect(cs)
     const adminDb = client.db().admin()
     const list = await adminDb.listDatabases()
     list.databases.forEach((database, index) => {
@@ -10,9 +10,10 @@ export default async (cs: string) => {
       const collections = client.db(name).listCollections()
       list.databases[index].collections = collections
     })
-    client.close()
     return list.databases
   } catch (e) {
     throw new Error(e)
+  } finally {
+    client.close()
   }
 }
