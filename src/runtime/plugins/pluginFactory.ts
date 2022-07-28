@@ -9,7 +9,10 @@ import { toCamelCase } from '../../utils/toCamelCase'
  *
  * @important in order to fetch databases + collections and admin URI must be given in config
  */
-export default defineNuxtPlugin(() => {
+export default defineNuxtPlugin(async () => {
+  const runtimeConfig = useRuntimeConfig()
+  const { dbFunctions, collectionFunctions } = runtimeConfig.mongo.functions
+
   const _mongoDbRequest = (dbReqRoute, dbName, func) => {
     return useFetch(dbReqRoute, { method: 'POST', ...{ dbName, func } })
   }
@@ -20,18 +23,9 @@ export default defineNuxtPlugin(() => {
       ...{ dbName, collName, func }
     })
   }
-  const runtimeConfig = useRuntimeConfig()
-  const { dbFunctions, collectionFunctions } = runtimeConfig.mongo.functions
-  const databaseList = runtimeConfig.mongo.databaseList
-  const dbReqRoute = runtimeConfig.public.mongo.dbReqRoute
-  const mongoFactory = {}
 
-  const collectionFunctionFactory = (db, collections) => {}
-
-  const dbNames = databaseList.map(db => db.name)
-  const dbMap = Object.fromEntries(
-    // map db functions
-    databaseList.map(db => [
+  function dbFunctionFactory (dbList) {
+    return dbList.map(db => [
       db.name,
       Object.fromEntries(
         dbFunctions.map(func => [
@@ -40,7 +34,31 @@ export default defineNuxtPlugin(() => {
         ])
       )
     ])
-  )
+  }
 
-  console.log(dbMap)
+  function collFunctionFactory (collName, dbName) {
+    Object.fromEntries(collectionFunctions.map(func => [
+      func,
+      () => _mongoCollRequest(dbCollRoute, dbName, collName, func)
+    ]))
+  }
+
+  const databaseList = runtimeConfig.mongo.databaseList
+  const dbReqRoute = runtimeConfig.public.mongo.dbReqRoute
+  const dbCollRoute = runtimeConfig.public.mongo.dbCollRoute
+  const mongoFactory = {}
+  console.log(databaseList)
+  /**
+   * Map functions to fetched databases
+   */
+  // const tree = Object.fromEntries(
+  //   dbFunctionFactory(databaseList)
+  // )
+  // Object.keys(tree).forEach((db) => {
+  //   console.log(tree[db].collections())
+  //   // Object.fromEntries(tree[db].collections.map((collName) => {
+  //   //   collFunctionFactory(collName, db)
+  //   // }))
+  //   console.log(tree[db])
+  // })
 })

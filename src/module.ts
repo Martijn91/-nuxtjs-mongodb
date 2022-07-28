@@ -75,6 +75,7 @@ export default defineNuxtModule<ModuleOptions>({
     if (options.pluginFactory) {
       const databaseList = await _getDatabaseList(cs)
       runtimeConfig.mongo.databaseList = databaseList
+      console.log(databaseList)
 
     // manual plugin config (requires database + collection options)
     } else {

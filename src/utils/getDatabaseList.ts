@@ -1,19 +1,38 @@
 import { MongoClient } from 'mongodb'
 
-export default async (cs: string) => {
+async function _getDatabases (cs) {
   const client = await MongoClient.connect(cs)
   try {
     const adminDb = client.db().admin()
     const list = await adminDb.listDatabases()
-    list.databases.forEach((database, index) => {
-      const { name } = database
-      const collections = client.db(name).listCollections()
-      list.databases[index].collections = collections
-    })
-    return list.databases
+    return list
   } catch (e) {
     throw new Error(e)
   } finally {
-    client.close()
+    await client.close()
+  }
+}
+
+export default async (cs: string) => {
+  try {
+    const res = await _getDatabases(cs).then(async ({ databases }) => {
+      const dbMap = await databases.map(async (db) => {
+        const collections = await MongoClient.connect(cs).then(async (client) => {
+          const collections = await client.db(db.name).listCollections().toArray()
+          return collections
+        })
+        return {
+          db,
+          collections
+        }
+      })
+      return dbMap
+    }).then(async (val) => {
+      const list = await Promise.all(val)
+      return list
+    })
+    return res
+  } catch (e) {
+    throw new Error(e)
   }
 }
