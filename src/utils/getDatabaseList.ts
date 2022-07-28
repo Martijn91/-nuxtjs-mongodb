@@ -18,13 +18,11 @@ export default async (cs: string) => {
     const res = await _getDatabases(cs).then(async ({ databases }) => {
       const dbMap = await databases.map(async (db) => {
         const collections = await MongoClient.connect(cs).then(async (client) => {
-          const collections = await client.db(db.name).listCollections().toArray()
+          const collections = await client.db(db.name)?.listCollections()?.toArray()
           return collections
         })
-        return {
-          db,
-          collections
-        }
+        db.collections = collections
+        return db
       })
       return dbMap
     }).then(async (val) => {
