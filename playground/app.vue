@@ -46,7 +46,7 @@ const res = ref('')
 const payloadKey = ref('')
 const payloadValue = ref('')
 const runtimeConfig = useRuntimeConfig()
-const operations = runtimeConfig.public.mongo.operations
+// const operations = runtimeConfig.public.mongo.operations
 const functionFactory = async (option) => {
   // res.value = await $mongo[option]({ [payloadKey.value]: payloadValue.value }, 'posts', 'sample_training')
 }

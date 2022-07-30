@@ -3,8 +3,8 @@ import { fileURLToPath } from 'url'
 import { defineNuxtModule, createResolver, addPlugin, addServerHandler } from '@nuxt/kit'
 import { ModuleOptions } from '@nuxt/schema'
 import { getConnectionString } from './utils/getConnectionString'
-
 import _getDatabaseList from './utils/getDatabaseList'
+import { pluginFactory } from './utils/pluginFactory'
 
 export default defineNuxtModule<ModuleOptions>({
   meta: {
@@ -24,7 +24,9 @@ export default defineNuxtModule<ModuleOptions>({
     collection: null,
     options: {},
     pluginFactory: true,
-    serverRoute: '/api/_mongodb/operate'
+    // serverRoute: '/api/_mongodb/operate',
+    nitroDbRoute: '/api/_mongodb/db-req',
+    nitroCollRoute: '/api/_mongodb/coll-req'
   },
 
   async setup (options, nuxt) {
@@ -35,7 +37,7 @@ export default defineNuxtModule<ModuleOptions>({
      * Fetch base mongodb func
      */
     const { Collection, Db } = await import('mongodb')
-    const collectionFunctions = Object.getOwnPropertyNames(Collection.prototype)
+    const collFunctions = Object.getOwnPropertyNames(Collection.prototype)
     const dbFunctions = Object.getOwnPropertyNames(Db.prototype)
 
     /**
@@ -43,7 +45,7 @@ export default defineNuxtModule<ModuleOptions>({
      */
     runtimeConfig.mongo = {
       classes: { Collection, Db },
-      functions: { collectionFunctions, dbFunctions }
+      functions: { collFunctions, dbFunctions }
     }
 
     /**
@@ -57,7 +59,9 @@ export default defineNuxtModule<ModuleOptions>({
       collection: process.env.MONGODB_COLLECTION || options.collection,
       database: process.env.MONGODB_DATABASE || options.database,
       options: process.env.MONGODB_OPTIONS || options.options,
-      serverRoute: process.env.MONGODB_SERVER_ROUTE || options.serverRoute
+      serverRoute: process.env.MONGODB_SERVER_ROUTE || options.serverRoute,
+      nitroDbRoute: process.env.MONGODB_SERVER_DB_ROUTE || options.nitroDbRoute,
+      nitroCollRoute: process.env.MONGODB_SERVER_COLL_ROUTE || options.nitroCollRoute
     }
 
     /**
@@ -74,25 +78,37 @@ export default defineNuxtModule<ModuleOptions>({
     // plugin factory (auto import) (@requires admin uri)
     if (options.pluginFactory) {
       const databaseList = await _getDatabaseList(cs)
-      runtimeConfig.mongo.databaseList = databaseList
-
-    // manual plugin config (requires database + collection options)
+      const factoryParams = {
+        databaseList,
+        dbFunctions,
+        collFunctions,
+        nitroDbRoute: options.nitroDbRoute,
+        nitroCollRoute: options.nitroCollRoute
+      }
+      const pluginFunctionsObject = pluginFactory(factoryParams)
+      if (!runtimeConfig.public.mongo) {
+        runtimeConfig.public.mongo = {}
+      }
+      runtimeConfig.public.mongo.template = pluginFunctionsObject
     } else {
       console.log('manual')
     }
 
     const runtimeDir = fileURLToPath(new URL('./runtime', import.meta.url))
     nuxt.options.build.transpile.push(runtimeDir)
-    addPlugin(resolve(runtimeDir, 'plugins/pluginFactory'))
-    // addPlugin(resolve(runtimeDir, 'plugins/plugin'))
+    addPlugin(resolve(runtimeDir, 'plugins/plugin'))
 
     /**
      * Server middleware
      */
-    runtimeConfig.public.mongo = { serverRoute: options.serverRoute }
     addServerHandler({
-      route: options.serverRoute,
-      handler: resolve(runtimeDir, 'server/api/session')
+      route: options.nitroDbRoute,
+      handler: resolve(runtimeDir, 'server/api/databaseReq')
+    })
+
+    addServerHandler({
+      route: options.nitroCollRoute,
+      handler: resolve(runtimeDir, 'server/api/collectionReq')
     })
   }
 })
