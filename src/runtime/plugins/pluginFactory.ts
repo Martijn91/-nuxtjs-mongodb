@@ -9,7 +9,7 @@ import { toCamelCase } from '../../utils/toCamelCase'
  *
  * @important in order to fetch databases + collections and admin URI must be given in config
  */
-export default defineNuxtPlugin(async () => {
+export default defineNuxtPlugin(() => {
   const runtimeConfig = useRuntimeConfig()
   const { dbFunctions, collectionFunctions } = runtimeConfig.mongo.functions
 
@@ -24,66 +24,60 @@ export default defineNuxtPlugin(async () => {
     })
   }
 
-  function dbFunctionFactory (dbList) {
-    dbList.map(db => [
+  function mapDatabase (dbList) {
+    const obj = [...dbList]
+    obj.map(db => [
       db.name,
       Object.fromEntries(
         dbFunctions.map(func => [func, () => _mongoDbRequest(db, func)])
       )
     ])
-    // for (const { collections, name } of dbList) {
-    //   Object.fromEntries(
-    //     collections.map(col => [
-    //       col.name,
-    //       Object.fromEntries(
-    //         collectionFunctions.map(func => [
-    //           col.name,
-    //           () => _mongoCollRequest(name, col.name, func)
-    //         ])
-    //       )
-    //     ])
-    //   )
-    //   // dbList.forEach((db) => {
-    //   //   Object.fromEntries(db.collections.map(coll => [
-    //   //     coll,
-    //   //     Object.fromEntries(
-    //   //       collectionFunctions.map(func => [
-    //   //         func,
-    //   //         () => _mongoCollRequest(db.name, coll, func)
-    //   //       ])
-    //   //     )
-    //   //   ]))
-    //   // })
-    // }
-    return dbList
+    const res = Object.fromEntries(obj.map(item => [item.name, item]))
+    return res
   }
 
-  function collFunctionFactory (coll, db) {
-    Object.fromEntries(
-      collectionFunctions.map(func => [
-        func,
-        () => _mongoCollRequest(collReqRoute, db, coll, func)
-      ])
-    )
+  function mapCollection (dbList) {
+    const obj = { ...dbList }
+    const dbName = obj?.name
+    const collectionNames = obj?.collections?.map(item => item.name)
+
+    collectionNames.forEach((collName) => {
+      Object.assign(obj, {
+        [collName]: Object.fromEntries(
+          collectionFunctions.map(func => [
+            func,
+            () => _mongoCollRequest(dbName, collName, func)
+          ])
+        )
+      })
+    })
+    return obj
+  }
+
+  function generatePluginFunctions (databaseList) {
+    const databaseRes = mapDatabase(databaseList)
+    Object.keys(databaseRes).forEach((key) => {
+      const collectionList = databaseRes[key]
+      const collRes = mapCollection(collectionList)
+      databaseRes[key] = { ...databaseRes[key], ...collRes }
+    })
+    return databaseRes
   }
 
   const dbReqRoute = runtimeConfig.public.mongo.dbReqRoute
   const collReqRoute = runtimeConfig.public.mongo.collReqRoute
   const databaseList = runtimeConfig.mongo.databaseList
-  const mongoFactory = {}
-  /**
-   * Map functions to fetched databases
-   */
-  const factory = dbFunctionFactory(databaseList)
-  const databaseIndex = Object.fromEntries(factory.map(item => [item.name, item]))
-  Object.keys(databaseIndex).forEach((item) => {
-    const db = databaseIndex[item]
-    const collections = db.collections
-    Object.entries(collections).forEach((value) => {
-      console.log('value', value)
-    })
-    console.log(collections)
-  })
+
+  const pluginFuncObject = generatePluginFunctions(databaseList)
+
+  // Object.keys(databaseIndex).forEach((item) => {
+  //   const db = databaseIndex[item]
+  //   const collections = db.collections
+  //   Object.entries(collections).forEach((value) => {
+  //     console.log('value', value)
+  //   })
+  //   console.log(collections)
+  // })
 
   // Object.keys(tree).forEach((db) => {
   //   console.log(tree[db].collections)
