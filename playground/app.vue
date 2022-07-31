@@ -41,9 +41,7 @@
 
 <script setup>
 const { $mongo } = useNuxtApp()
-console.log($mongo)
-// const result = await $mongo.sample_analytics.accounts.dbName
-// console.log(result)
+const result = await $mongo.sample_analytics.customers.findOne({ name: 'Elizabeth Ray' })
 const res = ref('')
 const payloadKey = ref('')
 const payloadValue = ref('')

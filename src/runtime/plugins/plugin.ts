@@ -13,30 +13,22 @@ export default defineNuxtPlugin(() => {
   const runtimeConfig = useRuntimeConfig()
   const { databaseList, nitroDbRoute, nitroCollRoute, dbFunctions, collFunctions } = runtimeConfig.public.mongo.factoryParams
 
-  const mongoDbRequest = (dbName: string = null, func: string = null) => {
-    const query = async (payload) => {
-      const fetch = await useFetch(nitroDbRoute, { method: 'POST', ...{ dbName, func, payload } })
-      return fetch
-    }
-    return query
+  const mongoDbRequest = async (dbName: string = null, func: string = null, payload = {}) => {
+    return await useFetch(nitroDbRoute, { method: 'POST', body: { dbName, func, payload } })
   }
 
-  const mongoCollRequest = (dbName: string = null, collName: string = null, func: string = null) => {
-    const query = async (payload) => {
-      const fetch = await useFetch(nitroCollRoute, {
-        method: 'POST',
-        ...{ dbName, collName, func, payload }
-      })
-      return fetch
-    }
-    return query
+  const mongoCollRequest = async (dbName: string = null, collName: string = null, func: string = null, payload = {}) => {
+    return await useFetch(nitroCollRoute, {
+      method: 'POST',
+      body: { dbName, collName, func, payload }
+    })
   }
 
   const mapDatabase = (dbList) => {
     const obj = dbList
     const dbIndex = { ...Object.fromEntries(obj.map(item => [item.name, item])) }
     Object.keys(dbIndex).forEach((dbName) => {
-      const functionIndex = Object.fromEntries(dbFunctions.map(func => [func, mongoDbRequest(dbName, func)]))
+      const functionIndex = Object.fromEntries(dbFunctions.map(func => [func, payload => mongoDbRequest(dbName, func, payload)]))
       dbIndex[dbName] = { ...dbIndex[dbName], ...functionIndex }
     })
     return dbIndex
@@ -51,7 +43,7 @@ export default defineNuxtPlugin(() => {
       obj[collName] = Object.fromEntries(
         collFunctions.map(func => [
           func,
-          mongoCollRequest(dbName, collName, func)
+          payload => mongoCollRequest(dbName, collName, func, payload)
         ])
       )
     })
