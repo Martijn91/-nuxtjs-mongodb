@@ -1,10 +1,10 @@
 import { fileURLToPath } from 'url'
 
-import { defineNuxtModule, createResolver, addPlugin, addServerHandler } from '@nuxt/kit'
+import { defineNuxtModule, createResolver, addPlugin, addServerHandler, addPluginTemplate } from '@nuxt/kit'
 import { ModuleOptions } from '@nuxt/schema'
 import { getConnectionString } from './utils/getConnectionString'
 import _getDatabaseList from './utils/getDatabaseList'
-import { pluginFactory } from './utils/pluginFactory'
+import { pluginFactory } from './runtime/plugins/pluginFactory'
 
 export default defineNuxtModule<ModuleOptions>({
   meta: {
@@ -73,9 +73,14 @@ export default defineNuxtModule<ModuleOptions>({
     runtimeConfig.mongo.params = params
 
     /**
+     * Transpile runtime
+     */
+    const runtimeDir = fileURLToPath(new URL('./runtime', import.meta.url))
+    nuxt.options.build.transpile.push(runtimeDir)
+
+    /**
      * Set database + collection data
      */
-    // plugin factory (auto import) (@requires admin uri)
     if (options.pluginFactory) {
       const databaseList = await _getDatabaseList(cs)
       const factoryParams = {
@@ -89,13 +94,14 @@ export default defineNuxtModule<ModuleOptions>({
       if (!runtimeConfig.public.mongo) {
         runtimeConfig.public.mongo = {}
       }
-      runtimeConfig.public.mongo.template = pluginFunctionsObject
+      const pluginFunctionsString = JSON.stringify(pluginFunctionsObject)
+      runtimeConfig.public.mongo.template = pluginFunctionsString
     } else {
       console.log('manual')
     }
 
-    const runtimeDir = fileURLToPath(new URL('./runtime', import.meta.url))
-    nuxt.options.build.transpile.push(runtimeDir)
+    // addPluginTemplate(resolve(runtimeDir, '/plugins/pluginFactory'))
+
     addPlugin(resolve(runtimeDir, 'plugins/plugin'))
 
     /**

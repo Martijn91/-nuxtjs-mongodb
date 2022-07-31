@@ -2,10 +2,11 @@ import { defineNuxtPlugin } from '#app'
 
 export default defineNuxtPlugin(() => {
   const runtimeConfig = useRuntimeConfig()
-  const mongo = runtimeConfig.public.mongo.template
+  const templateString = runtimeConfig.public.mongo.template
+  const template = JSON.parse(templateString)
   return {
     provide: {
-      mongo
+      mongo: template
     }
   }
 })
