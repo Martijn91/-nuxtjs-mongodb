@@ -41,8 +41,9 @@
 
 <script setup>
 const { $mongo } = useNuxtApp()
-const result = await $mongo.sample_analytics.accounts.dbName
-console.log(result)
+console.log($mongo)
+// const result = await $mongo.sample_analytics.accounts.dbName
+// console.log(result)
 const res = ref('')
 const payloadKey = ref('')
 const payloadValue = ref('')

@@ -1,10 +1,9 @@
 import { fileURLToPath } from 'url'
 
-import { defineNuxtModule, createResolver, addPlugin, addServerHandler, addPluginTemplate } from '@nuxt/kit'
+import { defineNuxtModule, createResolver, addPlugin, addServerHandler } from '@nuxt/kit'
 import { ModuleOptions } from '@nuxt/schema'
 import { getConnectionString } from './utils/getConnectionString'
 import _getDatabaseList from './utils/getDatabaseList'
-import { pluginFactory } from './runtime/plugins/pluginFactory'
 
 export default defineNuxtModule<ModuleOptions>({
   meta: {
@@ -24,7 +23,6 @@ export default defineNuxtModule<ModuleOptions>({
     collection: null,
     options: {},
     pluginFactory: true,
-    // serverRoute: '/api/_mongodb/operate',
     nitroDbRoute: '/api/_mongodb/db-req',
     nitroCollRoute: '/api/_mongodb/coll-req'
   },
@@ -73,12 +71,6 @@ export default defineNuxtModule<ModuleOptions>({
     runtimeConfig.mongo.params = params
 
     /**
-     * Transpile runtime
-     */
-    const runtimeDir = fileURLToPath(new URL('./runtime', import.meta.url))
-    nuxt.options.build.transpile.push(runtimeDir)
-
-    /**
      * Set database + collection data
      */
     if (options.pluginFactory) {
@@ -90,18 +82,19 @@ export default defineNuxtModule<ModuleOptions>({
         nitroDbRoute: options.nitroDbRoute,
         nitroCollRoute: options.nitroCollRoute
       }
-      const pluginFunctionsObject = pluginFactory(factoryParams)
       if (!runtimeConfig.public.mongo) {
         runtimeConfig.public.mongo = {}
       }
-      const pluginFunctionsString = JSON.stringify(pluginFunctionsObject)
-      runtimeConfig.public.mongo.template = pluginFunctionsString
+      runtimeConfig.public.mongo.factoryParams = factoryParams
     } else {
-      console.log('manual')
+      /* manual db handling here */
     }
 
-    // addPluginTemplate(resolve(runtimeDir, '/plugins/pluginFactory'))
-
+    /**
+     * Transpile runtime
+     */
+    const runtimeDir = fileURLToPath(new URL('./runtime', import.meta.url))
+    nuxt.options.build.transpile.push(runtimeDir)
     addPlugin(resolve(runtimeDir, 'plugins/plugin'))
 
     /**

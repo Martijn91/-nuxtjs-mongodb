@@ -21,7 +21,7 @@ export default async (cs: string) => {
           const collections = await client.db(db.name)?.listCollections()?.toArray()
           return collections
         })
-        db.collections = collections
+        db.collectionData = collections
         return db
       })
       return dbMap
