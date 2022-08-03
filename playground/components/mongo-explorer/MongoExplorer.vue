@@ -5,8 +5,8 @@ import { Db } from 'mongodb';
       <div class="flex-col w-full">
         <base-card
           title="Databases"
-          :options="dbList"
-          @select="onDatabaseSelect"
+          :options="database.list"
+          @select="select.database"
         >
           <template v-if="selectedDatabaseName" #foot>
             {{ selectedDatabaseName }}
@@ -16,8 +16,8 @@ import { Db } from 'mongodb';
       <div class="flex-col w-full">
         <base-card
           title="Collections"
-          :options="collectionList"
-          @select="onCollectionSelect"
+          :options="collection.list"
+          @select="select.collection"
         >
           <template v-if="selectedCollectionName" #foot>
             {{ selectedCollectionName }}
@@ -26,12 +26,23 @@ import { Db } from 'mongodb';
       </div>
       <div class="flex-col w-full">
         <base-card
-          title="Operations"
-          :options="operationList"
-          @select="onOperationSelect"
+          title="DB Operations"
+          :options="operation.db.list"
+          @select="select.dbOperation"
         >
           <template v-if="selectedCollectionName" #foot>
-            {{ selectedOperationName }}
+            {{ selectedDbOperationName }}
+          </template>
+        </base-card>
+      </div>
+      <div class="flex-col w-full">
+        <base-card
+          title="COLL Operations"
+          :options="operation.coll.list"
+          @select="select.collOperation"
+        >
+          <template v-if="selectedCollectionName" #foot>
+            {{ selectedCollOperationName }}
           </template>
         </base-card>
       </div>
@@ -45,51 +56,64 @@ const { $mongo } = useNuxtApp()
 
 const selectedDatabaseName = ref(null)
 const selectedCollectionName = ref(null)
-const selectedOperationName = ref(null)
+const selectedDbOperationName = ref(null)
+const selectedCollOperationName = ref(null)
 
-const selectedDatabaseRef = ref({})
-const selectedCollectionRef = ref({})
-const selectedOperationRef = ref({})
+const database = reactive({
+  data: $mongo,
+  list: computed(() => Object.keys(database.data) || []),
+  selected: {}
+})
 
-const selectedTarget = reactive({ type: null, ref: {} })
+const collection = reactive({
+  data: [],
+  list: computed(() => collection.data.map(coll => coll.name) || []),
+  selected: {}
+})
 
-const dbList = computed(() => Object.keys($mongo) || [])
-const collectionList = computed(() => (selectedDatabaseRef.value?.collectionData?.map(coll => coll.name) || []))
-const operationList = computed(() => Object.keys(selectedTarget.ref) || [])
+const operation = reactive({
+  db: {
+    data: {},
+    list: computed(() => Object.keys(operation.db.data))
+  },
+  coll: {
+    data: {},
+    list: computed(() => Object.keys(operation.coll.data))
+  }
+})
 
-const selectedOperation = ref(null)
+// function onDatabaseSelect (dbName) {
+//   select.database(dbName)
+//   // reset.collection()
+//   // reset.operation()
+// }
 
-function onDatabaseSelect (dbName) {
-  select.database(dbName)
-  reset.collection()
-  reset.operation()
-}
+// function onCollectionSelect (collName) {
+//   select.collection(collName)
+//   // reset.operation()
+// }
 
-function onCollectionSelect (collName) {
-  select.collection(collName)
-  reset.operation()
-}
-
-function onOperationSelect (operation) {
-  select.operation(operation)
-}
+// function onOperationSelect (operation) {
+//   select.operation(operation)
+// }
 
 const select = {
   database: (dbName) => {
-    Object.assign(selectedDatabaseRef.value, $mongo[dbName])
     selectedDatabaseName.value = dbName
-    selectedTarget.type = 'db'
-    selectedTarget.ref = selectedDatabaseRef
+    database.selected = database.data[dbName]
+    collection.data = database.selected.collectionData
+    operation.db.data = database.selected
   },
   collection: (collName) => {
-    Object.assign(selectedCollectionRef.value, selectedDatabaseRef.value[collName])
     selectedCollectionName.value = collName
-    selectedTarget.type = 'col'
-    selectedTarget.ref = selectedCollectionRef
+    collection.selected = collection.data[collName]
+    operation.coll.data = collection.selected
   },
-  operation: (opName) => {
-    Object.assign(selectedOperationRef.value, target)
-    selectedOperationName.value = opName
+  dbOperation: (opName) => {
+    selectedDbOperationName.value = opName
+  },
+  collOperation: (opName) => {
+    selectedCollOperationName.value = opName
   }
 }
 
@@ -106,12 +130,6 @@ const reset = {
     selectedOperationRef.value = {}
     selectedOperationName.value = null
   }
-}
-
-function getTargetOperations (target) {
-  return Object.keys(target).filter((operation) => {
-    return operation !== 'collectionData'
-  })
 }
 
 </script>
