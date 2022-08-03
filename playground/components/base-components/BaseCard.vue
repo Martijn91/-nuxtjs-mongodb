@@ -1,5 +1,5 @@
 <template>
-  <div class="p-6">
+  <div class="p-6 w-full">
     <div v-if="$slots.head" class="mb-5 mt-5">
       <slot name="head" />
     </div>

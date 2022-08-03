@@ -1,8 +1,8 @@
 import { Db } from 'mongodb';
 <template>
-  <div class="container">
-    <div class="flex p-10 flex-row gap-6">
-      <div class="flex-col">
+  <div class="container w-full">
+    <div class="flex p-10 flex-row justify-evenly">
+      <div class="flex-col w-full">
         <base-card
           title="Databases"
           :options="dbList"
@@ -13,7 +13,7 @@ import { Db } from 'mongodb';
           </template>
         </base-card>
       </div>
-      <div class="flex-col">
+      <div class="flex-col w-full">
         <base-card
           title="Collections"
           :options="collectionList"
@@ -24,14 +24,14 @@ import { Db } from 'mongodb';
           </template>
         </base-card>
       </div>
-      <div class="flex-col">
+      <div class="flex-col w-full">
         <base-card
           title="Operations"
           :options="operationList"
           @select="onOperationSelect"
         >
           <template v-if="selectedCollectionName" #foot>
-            {{ selectedOperation }}
+            {{ selectedOperationName }}
           </template>
         </base-card>
       </div>
@@ -39,106 +39,72 @@ import { Db } from 'mongodb';
   </div>
 </template>
 
-<script setup lang="ts">
-import type { Ref, ComputedRef } from 'vue'
-import type { Collection, Db } from 'mongodb'
+<script setup>
 
-type DatabaseName = string
-type CollectionName = string
-type OperationName = string
+const { $mongo } = useNuxtApp()
 
-type CollectionKey = keyof Collection
+const selectedDatabaseName = ref(null)
+const selectedCollectionName = ref(null)
+const selectedOperationName = ref(null)
 
-interface CollectionData {
-  [x: CollectionName]: CollectionKey
-}
+const selectedDatabaseRef = ref({})
+const selectedCollectionRef = ref({})
+const selectedOperationRef = ref({})
 
-interface Database extends Db {
-  collectionData: keyof Collection[]
-}
+const selectedTarget = reactive({ type: null, ref: {} })
 
-interface DatabaseOptions {
-  [collectionData:string]: keyof Collection[]
-  [x: string]: keyof Database;
-}
-
-type DatabaseOption = keyof Database
-
-interface CollectionKeyIndex {
-  [x: CollectionName]: CollectionKey[]
-}
-
-const { $mongo }: {$mongo: Record<DatabaseName, DatabaseOption[]>} = useNuxtApp()
-
-const selectedDatabaseName: Ref<DatabaseName | null> = ref(null)
-const selectedCollectionName: Ref<CollectionName | null> = ref(null)
-const selectedOperationName: Ref<OperationName | null> = ref(null)
-
-const selectedDatabaseRef: DatabaseKeyIndex | null = computed(() => selectedDatabaseName.value ? $mongo[selectedDatabaseName.value] : null)
-const selectedCollectionRef: Collection | {} = reactive({})
-const selectedOperationRef = reactive({})
-
-const dbList: ComputedRef<DatabaseName[]> = computed(() => Object.keys($mongo) || [])
-const collectionList: ComputedRef<CollectionName[]> = computed(() => (Object.keys(selectedDatabaseRef.collectionData) || []))
-const operationList: ComputedRef<OperationName[]> = computed(() => (Object.keys(selectedCollectionRef) || []))
-const target = computed(() => selectedCollectionName.value || selectedDatabaseName?.value || null)
+const dbList = computed(() => Object.keys($mongo) || [])
+const collectionList = computed(() => (selectedDatabaseRef.value?.collectionData?.map(coll => coll.name) || []))
+const operationList = computed(() => Object.keys(selectedTarget.ref) || [])
 
 const selectedOperation = ref(null)
 
-const selectedTarget = reactive({})
-
-function onDatabaseSelect (db) {
-  selectedDatabaseName.value = db
-  Object.assign(selectedDatabaseRef, $mongo[db])
-  selectedCollectionName.value = null
-  Object.assign(selectedCollectionRef, {})
-  Object.assign(selectedTarget, selectedDatabaseRef)
+function onDatabaseSelect (dbName) {
+  select.database(dbName)
+  reset.collection()
+  reset.operation()
 }
 
-function onCollectionSelect (coll) {
-  selectedCollectionName.value = coll.name
-  const parent = $mongo[selectedDatabaseName.value]
-  const target = parent[coll.name]
-  console.log(target)
-  Object.assign(selectedTarget, target)
-  console.log(selectedTarget)
+function onCollectionSelect (collName) {
+  select.collection(collName)
+  reset.operation()
 }
 
 function onOperationSelect (operation) {
-  selectedOperation.value = operation
+  select.operation(operation)
 }
 
-function select () {
-  return {
-    database: (dbName: DatabaseName) => {
-      Object.assign(selectedDatabaseRef, $mongo[dbName])
-      selectedDatabaseName.value = dbName
-    },
-    collection: (collName: CollectionName) => {
-      Object.assign(selectedCollectionRef, selectedDatabaseRef[collName])
-      selectedCollectionName.value = collName
-    },
-    operation: (opName: OperationName) => {
-      Object.assign(selectedOperationRef, selectedCollectionRef[opName])
-      selectedOperationName.value = opName
-    }
+const select = {
+  database: (dbName) => {
+    Object.assign(selectedDatabaseRef.value, $mongo[dbName])
+    selectedDatabaseName.value = dbName
+    selectedTarget.type = 'db'
+    selectedTarget.ref = selectedDatabaseRef
+  },
+  collection: (collName) => {
+    Object.assign(selectedCollectionRef.value, selectedDatabaseRef.value[collName])
+    selectedCollectionName.value = collName
+    selectedTarget.type = 'col'
+    selectedTarget.ref = selectedCollectionRef
+  },
+  operation: (opName) => {
+    Object.assign(selectedOperationRef.value, target)
+    selectedOperationName.value = opName
   }
 }
 
-function reset () {
-  return {
-    database: () => {
-      Object.assign(selectedDatabaseRef, {})
-      selectedDatabaseName.value = null
-    },
-    collection: () => {
-      Object.assign(selectedCollectionRef, {})
-      selectedCollectionName.value = null
-    },
-    operation: () => {
-      Object.assign(selectedOperationRef, {})
-      selectedOperationName.value = null
-    }
+const reset = {
+  database: () => {
+    selectedDatabaseRef.value = {}
+    selectedDatabaseName.value = null
+  },
+  collection: () => {
+    selectedCollectionRef.value = {}
+    selectedCollectionName.value = null
+  },
+  operation: () => {
+    selectedOperationRef.value = {}
+    selectedOperationName.value = null
   }
 }
 
