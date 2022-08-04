@@ -1,8 +1,5 @@
 <template>
   <div class="p-6 w-full">
-    <div v-if="$slots.head" class="mb-5 mt-5">
-      <slot name="head" />
-    </div>
     <h1 v-if="title" class="text-xl mb-4">
       {{ title }}
     </h1>
@@ -23,9 +20,6 @@
         </button>
       </li>
     </transition-group>
-    <div v-if="$slots.foot" class="mb-5 mt-5 border-t">
-      <slot name="foot" />
-    </div>
   </div>
 </template>
 

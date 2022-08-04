@@ -1,52 +1,37 @@
 import { Db } from 'mongodb';
 <template>
-  <div class="container w-full">
+  <div class="w-full">
     <div class="flex p-10 flex-row justify-evenly">
       <div class="flex-col w-full">
         <base-card
           title="Databases"
           :options="database.list"
           @select="select.database"
-        >
-          <template v-if="selectedDatabaseName" #foot>
-            {{ selectedDatabaseName }}
-          </template>
-        </base-card>
+        />
       </div>
       <div class="flex-col w-full">
         <base-card
           title="Collections"
           :options="collection.list"
           @select="select.collection"
-        >
-          <template v-if="selectedCollectionName" #foot>
-            {{ selectedCollectionName }}
-          </template>
-        </base-card>
+        />
       </div>
       <div class="flex-col w-full">
         <base-card
           title="DB Operations"
           :options="operation.db.list"
           @select="select.dbOperation"
-        >
-          <template v-if="selectedCollectionName" #foot>
-            {{ selectedDbOperationName }}
-          </template>
-        </base-card>
+        />
       </div>
       <div class="flex-col w-full">
         <base-card
           title="COLL Operations"
           :options="operation.coll.list"
           @select="select.collOperation"
-        >
-          <template v-if="selectedCollectionName" #foot>
-            {{ selectedCollOperationName }}
-          </template>
-        </base-card>
+        />
       </div>
     </div>
+    <query-builder :selection-state="state" />
   </div>
 </template>
 
@@ -54,10 +39,12 @@ import { Db } from 'mongodb';
 
 const { $mongo } = useNuxtApp()
 
-const selectedDatabaseName = ref(null)
-const selectedCollectionName = ref(null)
-const selectedDbOperationName = ref(null)
-const selectedCollOperationName = ref(null)
+const state = reactive({
+  database: null,
+  collection: null,
+  dbOperation: null,
+  collOperation: null
+})
 
 const database = reactive({
   data: $mongo,
@@ -66,8 +53,8 @@ const database = reactive({
 })
 
 const collection = reactive({
-  data: [],
-  list: computed(() => collection.data.map(coll => coll.name) || []),
+  data: {},
+  list: computed(() => database?.selected?.collectionData?.map(item => item.name === 'collectionData' ? null : item.name) || []),
   selected: {}
 })
 
@@ -82,54 +69,39 @@ const operation = reactive({
   }
 })
 
-// function onDatabaseSelect (dbName) {
-//   select.database(dbName)
-//   // reset.collection()
-//   // reset.operation()
-// }
-
-// function onCollectionSelect (collName) {
-//   select.collection(collName)
-//   // reset.operation()
-// }
-
-// function onOperationSelect (operation) {
-//   select.operation(operation)
-// }
-
 const select = {
   database: (dbName) => {
-    selectedDatabaseName.value = dbName
+    state.database = dbName
     database.selected = database.data[dbName]
-    collection.data = database.selected.collectionData
+    collection.data = database.selected
     operation.db.data = database.selected
   },
   collection: (collName) => {
-    selectedCollectionName.value = collName
+    state.collection = collName
     collection.selected = collection.data[collName]
     operation.coll.data = collection.selected
   },
   dbOperation: (opName) => {
-    selectedDbOperationName.value = opName
+    state.dbOperation = opName
   },
   collOperation: (opName) => {
-    selectedCollOperationName.value = opName
+    state.collOperation = opName
   }
 }
 
-const reset = {
-  database: () => {
-    selectedDatabaseRef.value = {}
-    selectedDatabaseName.value = null
-  },
-  collection: () => {
-    selectedCollectionRef.value = {}
-    selectedCollectionName.value = null
-  },
-  operation: () => {
-    selectedOperationRef.value = {}
-    selectedOperationName.value = null
-  }
-}
+// const reset = {
+//   database: () => {
+//     selectedDatabaseRef.value = {}
+//     selectedDbName.value = null
+//   },
+//   collection: () => {
+//     selectedCollectionRef.value = {}
+//     selectedCollName.value = null
+//   },
+//   operation: () => {
+//     selectedOperationRef.value = {}
+//     selectedOperationName.value = null
+//   }
+// }
 
 </script>
