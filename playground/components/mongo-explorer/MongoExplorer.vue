@@ -6,12 +6,14 @@ import { Db } from 'mongodb';
         <base-card
           title="Databases"
           :options="database.list"
+          :selected-val="state.database"
           @select="select.database"
         />
       </div>
       <div class="flex-col w-full">
         <base-card
           title="Collections"
+          :selected-val="state.collection"
           :options="collection.list"
           @select="select.collection"
         />
@@ -19,6 +21,7 @@ import { Db } from 'mongodb';
       <div class="flex-col w-full">
         <base-card
           title="DB Operations"
+          :selected-val="state.dbOperation"
           :options="operation.db.list"
           @select="select.dbOperation"
         />
@@ -26,12 +29,13 @@ import { Db } from 'mongodb';
       <div class="flex-col w-full">
         <base-card
           title="COLL Operations"
+          :selected-val="state.collOperation"
           :options="operation.coll.list"
           @select="select.collOperation"
         />
       </div>
     </div>
-    <query-builder :selection-state="state" />
+    <query-builder :selection-state="state" @remove="(key) => reset[key]()" />
   </div>
 </template>
 
@@ -89,19 +93,24 @@ const select = {
   }
 }
 
-// const reset = {
-//   database: () => {
-//     selectedDatabaseRef.value = {}
-//     selectedDbName.value = null
-//   },
-//   collection: () => {
-//     selectedCollectionRef.value = {}
-//     selectedCollName.value = null
-//   },
-//   operation: () => {
-//     selectedOperationRef.value = {}
-//     selectedOperationName.value = null
-//   }
-// }
+const reset = {
+  database: () => {
+    state.database = null
+    database.selected = {}
+    collection.data = {}
+    operation.db.data = {}
+  },
+  collection: () => {
+    state.collection = null
+    collection.selected = {}
+    operation.coll.data = {}
+  },
+  dbOperation: () => {
+    state.dbOperation = null
+  },
+  collOperation: () => {
+    state.collOperation = null
+  }
+}
 
 </script>

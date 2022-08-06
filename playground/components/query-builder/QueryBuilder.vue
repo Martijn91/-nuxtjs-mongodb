@@ -1,16 +1,24 @@
 <template>
   <query-builder-bar>
     <template #one>
-      <code>{{ selectionState.database }}</code>
+      <base-button v-if="selectionState.database" @click="onItemClick('database')">
+        {{ selectionState.database }}
+      </base-button>
     </template>
     <template #two>
-      <code>{{ selectionState.collection }}</code>
+      <base-button v-if="selectionState.collection" @click="onItemClick('collection')">
+        {{ selectionState.collection }}
+      </base-button>
     </template>
     <template #three>
-      <code>{{ selectionState.dbOperation }}</code>
+      <base-button v-if="selectionState.dbOperation" @click="onItemClick('dbOperation')">
+        {{ selectionState.dbOperation }}
+      </base-button>
     </template>
     <template #four>
-      <code>{{ selectionState.collOperation }}</code>
+      <base-button v-if="selectionState.collOperation" @click="onItemClick('collOperation')">
+        {{ selectionState.collOperation }}
+      </base-button>
     </template>
   </query-builder-bar>
 </template>
@@ -19,4 +27,10 @@
 const props = defineProps({
   selectionState: { type: Object, default: () => {} }
 })
+
+const emit = defineEmits(['remove'])
+
+function onItemClick (keyVal) {
+  emit('remove', keyVal)
+}
 </script>

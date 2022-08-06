@@ -12,12 +12,9 @@
       leave-to-class="list-leave-to"
     >
       <li v-for="(option, index) in options" :key="index">
-        <button
-          class="rounded-md shadow-md hover:shadow-sm p-2 duration-75 transition-shadow block"
-          @click="$emit('select', option)"
-        >
+        <base-button :is-selected="option === selectedVal" @click="$emit('select', option)">
           {{ option.name || option }}
-        </button>
+        </base-button>
       </li>
     </transition-group>
   </div>
@@ -26,7 +23,8 @@
 <script setup>
 defineProps({
   title: { type: String, default: null },
-  options: { type: Array, default: () => [] }
+  options: { type: Array, default: () => [] },
+  selectedVal: { type: String, default: null }
 })
 </script>
 
