@@ -1,8 +1,9 @@
 <template>
-  <div class="p-6 w-full">
-    <h1 v-if="title" class="text-xl mb-4">
+  <div class="base-card">
+    <h1 v-if="title && options?.length > 0" class="title">
       {{ title }}
     </h1>
+    <base-search-bar :name="title" @search-change="onSearchChange" />
     <transition-group
       name="list"
       tag="ul"
@@ -12,7 +13,7 @@
       leave-to-class="list-leave-to"
     >
       <li v-for="(option, index) in options" :key="index">
-        <base-button :is-selected="option === selectedVal" @click="$emit('select', option)">
+        <base-button :is-selected="option === selectedVal" @click="$emit('on-selection', option)">
           {{ option.name || option }}
         </base-button>
       </li>
@@ -26,9 +27,23 @@ defineProps({
   options: { type: Array, default: () => [] },
   selectedVal: { type: String, default: null }
 })
+
+defineEmits(['on-selection'])
+
+function onSearchChange (val) {
+  console.log(val)
+}
 </script>
 
 <style lang="postcss">
+.base-card {
+  @apply w-full p-6 border border-green-200 drop-shadow-sm bg-white rounded;
+}
+
+.title {
+  @apply text-xl mb-4 text-green-700 block;
+}
+
 .list-enter-active {
   @apply transition-all ease-out duration-300;
 }

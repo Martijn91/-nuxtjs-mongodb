@@ -1,38 +1,43 @@
 import { Db } from 'mongodb';
 <template>
   <div class="w-full">
-    <div class="flex p-10 flex-row justify-evenly">
-      <div class="flex-col w-full">
-        <base-card
-          title="Databases"
-          :options="database.list"
-          :selected-val="state.database"
-          @select="select.database"
-        />
-      </div>
-      <div class="flex-col w-full">
-        <base-card
-          title="Collections"
-          :selected-val="state.collection"
-          :options="collection.list"
-          @select="select.collection"
-        />
-      </div>
-      <div class="flex-col w-full">
-        <base-card
-          title="DB Operations"
-          :selected-val="state.dbOperation"
-          :options="operation.db.list"
-          @select="select.dbOperation"
-        />
-      </div>
-      <div class="flex-col w-full">
-        <base-card
-          title="COLL Operations"
-          :selected-val="state.collOperation"
-          :options="operation.coll.list"
-          @select="select.collOperation"
-        />
+    <div class="container mx-auto max-w-screen-xl">
+      <div class="grid gap-6 grid-cols-3 mt-28">
+        <transition class="w-full">
+          <base-card
+            title="Databases"
+            :options="database.list"
+            :selected-val="state.database"
+            @on-selection="select.database"
+          />
+        </transition>
+        <transition class="w-full">
+          <base-card
+            v-if="state.database"
+            title="Collections"
+            :selected-val="state.collection"
+            :options="collection.list"
+            @on-selection="select.collection"
+          />
+        </transition>
+        <transition-group>
+          <div v-if="state.database && !state.collection" class="w-full">
+            <base-card
+              title="DB Operations"
+              :selected-val="state.dbOperation"
+              :options="operation.db.list"
+              @on-selection="select.dbOperation"
+            />
+          </div>
+          <div v-else-if="state.collection" class="w-full">
+            <base-card
+              title="COLL Operations"
+              :selected-val="state.collOperation"
+              :options="operation.coll.list"
+              @on-selection="select.collOperation"
+            />
+          </div>
+        </transition-group>
       </div>
     </div>
     <query-builder :selection-state="state" @remove="(key) => reset[key]()" />
@@ -75,12 +80,17 @@ const operation = reactive({
 
 const select = {
   database: (dbName) => {
+    reset.collection()
+    reset.dbOperation()
+    reset.collOperation()
     state.database = dbName
     database.selected = database.data[dbName]
     collection.data = database.selected
     operation.db.data = database.selected
   },
   collection: (collName) => {
+    reset.dbOperation()
+    reset.collOperation()
     state.collection = collName
     collection.selected = collection.data[collName]
     operation.coll.data = collection.selected
