@@ -19,7 +19,7 @@
 
 <style lang="postcss">
 .query-builder-bar {
-  @apply w-full fixed top-0 h-24 bg-green-100 border-b border-green-200 drop-shadow-sm  px-4 block;
+  @apply w-full fixed top-0 h-24 bg-green-100 border-b border-emerald-200 drop-shadow-sm  px-4 block;
 }
 
 .query-selections {

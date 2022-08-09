@@ -37,11 +37,11 @@ function onSearchChange (val) {
 
 <style lang="postcss">
 .base-card {
-  @apply w-full p-6 border border-green-200 drop-shadow-sm bg-white rounded;
+  @apply w-full p-6 border border-emerald-50 drop-shadow-sm bg-white rounded;
 }
 
 .title {
-  @apply text-xl mb-4 text-green-700 block;
+  @apply text-xl mb-4 text-green-500 block;
 }
 
 .list-enter-active {

@@ -13,7 +13,7 @@ defineProps({
 <style lang="postcss">
 
 .base-button {
-  @apply rounded-md shadow-sm outline outline-green-100 bg-white hover:shadow-md p-2 mb-2 block;
+  @apply rounded-md shadow-sm border border-emerald-100 bg-white hover:shadow-md p-2 mb-2 block;
 }
 
 .btn-label {
@@ -21,10 +21,10 @@ defineProps({
 }
 
 .selected {
-  @apply bg-green-100  hover:shadow-green-200 outline-hidden;
+  @apply bg-green-100  hover:shadow-green-200 border-hidden;
 }
 
 .selected .btn-label {
-  @apply text-green-400;
+  @apply text-green-500;
 }
 </style>

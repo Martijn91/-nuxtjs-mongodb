@@ -25,7 +25,11 @@ defineEmits(['search-change'])
   @apply mb-8
 }
 
-.search-bar-input {
-  @apply rounded-full bg-slate-50 shadow-sm outline text-slate-300 outline-slate-100 h-12 w-full px-4 focus-visible:outline-hidden focus-visible:bg-emerald-50 focus-visible:shadow-md focus-visible:shadow-green-100 focus-visible:text-green-700;
+input.search-bar-input {
+  @apply rounded-full placeholder-slate-300 bg-slate-50 shadow-sm border text-slate-500 border-slate-100 h-12 w-full px-4;
+}
+
+input.search-bar-input:focus-visible {
+ @apply border-emerald-100 outline-0 placeholder-emerald-200 bg-emerald-50 shadow-md shadow-green-100 text-green-500;
 }
 </style>
