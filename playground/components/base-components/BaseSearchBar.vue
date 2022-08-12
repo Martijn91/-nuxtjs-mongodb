@@ -1,15 +1,14 @@
 <template>
   <div :key="name" class="search-bar">
-    <form>
-      <input
-        ref="search-bar"
-        type="text"
-        :name="name"
-        :placeholder="`Search ${name}`"
-        class="search-bar-input"
-        @keyup="$emit('search-change', $event.target.value)"
-      >
-    </form>
+    <input
+      ref="search-bar"
+      type="text"
+      :name="name"
+      :placeholder="`Search ${name}`"
+      class="search-bar-input"
+      @keyup.prevent="$emit('search-change', $event.target.value)"
+      @keyup.enter="$event.target.blur()"
+    >
   </div>
 </template>
 
