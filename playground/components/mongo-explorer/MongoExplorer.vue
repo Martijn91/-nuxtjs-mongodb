@@ -40,19 +40,21 @@ import { Db } from 'mongodb';
         </transition-group>
       </div>
     </div>
-    <query-builder :selection-state="state" @remove="(key) => reset[key]()" />
+    <query-builder :selection-state="state" @query="query.launch" @update:payload="(val) => state.payload = val" @remove="(key) => reset[key]()" />
+    <base-flyout ref="flyout" />
   </div>
 </template>
 
 <script setup>
-
+const flyout = ref(null)
 const { $mongo } = useNuxtApp()
 
 const state = reactive({
   database: null,
   collection: null,
   dbOperation: null,
-  collOperation: null
+  collOperation: null,
+  payload: null
 })
 
 const database = reactive({
@@ -120,6 +122,21 @@ const reset = {
   },
   collOperation: () => {
     state.collOperation = null
+  }
+}
+
+const query = {
+  composable: () => {
+    return state.collOperation
+      ? async () => await $mongo[state.database][state.collection][state.collOperation](state.payload)
+      : state.dbOperation
+        ? async () => await $mongo[state.database][state.dbOperation](state.payload)
+        : console.error('Please choose operation')
+  },
+  launch: async () => {
+    const res = await query.composable()()
+    console.log(res)
+    // flyout.value.open()
   }
 }
 

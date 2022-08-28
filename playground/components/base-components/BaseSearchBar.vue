@@ -4,7 +4,7 @@
       ref="search-bar"
       type="text"
       :name="name"
-      :placeholder="`Search ${name}`"
+      :placeholder="name"
       class="search-bar-input"
       @keyup.prevent="$emit('search-change', $event.target.value)"
       @keyup.enter="$event.target.blur()"

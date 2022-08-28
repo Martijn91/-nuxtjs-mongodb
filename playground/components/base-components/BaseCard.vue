@@ -1,8 +1,8 @@
 <template>
   <div class="base-card">
-    <h1 v-if="title && props.options?.length > 0" class="title">
+    <!-- <h1 v-if="title && props.options?.length > 0" class="title">
       {{ title }}
-    </h1>
+    </h1> -->
     <base-search-bar :name="title" @search-change="(e) => searchVal = e || null" />
     <transition-group
       name="list"
@@ -37,7 +37,7 @@ const filteredOptions = computed(() => {
     : props.options
 })
 
-</script> 08717934
+</script>
 
 <style lang="postcss">
 .base-card {
