@@ -27,7 +27,7 @@
 
 <style lang="postcss">
 .query-builder-bar {
-  @apply w-full fixed bottom-0 h-16 bg-green-100 border-b border-emerald-200 shadow-[0px_0px_5px_0px_rgba(0,0,0,0.1)]  px-4 block;
+  @apply w-full fixed bottom-0 z-50 h-16 bg-green-100 border-b border-emerald-200 shadow-[0px_0px_5px_0px_rgba(0,0,0,0.1)]  px-4 block;
 }
 
 .query-selections {

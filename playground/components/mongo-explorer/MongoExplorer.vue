@@ -42,7 +42,19 @@ import { Db } from 'mongodb';
     </div>
     <query-builder :selection-state="state" @query="query.launch" @update:payload="(val) => state.payload = val" @remove="(key) => reset[key]()" />
     <base-flyout ref="flyout">
-      <code>{{ state.resData }}</code>
+      <div v-if="state.resData">
+        <p v-if="query.isLoading === true">
+          Loading data...
+        </p>
+        <code v-else><textarea
+          id=""
+          name="response"
+          disabled
+          cols="30"
+          rows="10"
+        >{{ prettify(state.resData?.data) }}</textarea>
+        </code>
+      </div>
     </base-flyout>
   </div>
 </template>
@@ -82,6 +94,13 @@ const operation = reactive({
     list: computed(() => Object.keys(operation.coll.data))
   }
 })
+
+function prettify (json) {
+  if (!json) { return 'loading...' }
+  const str = JSON.stringify(json).trim()
+  const prsd = JSON.parse(str)
+  return prsd
+}
 
 const select = {
   database: (dbName) => {
@@ -129,6 +148,7 @@ const reset = {
 }
 
 const query = {
+  isLoading: computed(() => !!state.resData?.pending?.value),
   launch: async () => {
     try {
       if (state.collOperation) {
@@ -143,8 +163,11 @@ const query = {
       console.log(e)
     } finally {
       flyout.value.open()
+      query.refresh()
     }
-  }
+  },
+  refresh: () => refreshNuxtData(state.resData.data)
+
 }
 
 </script>
