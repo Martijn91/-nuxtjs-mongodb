@@ -14,7 +14,7 @@
 
 const state = reactive(
   {
-    isOpen: true,
+    isOpen: false,
     open: () => { state.isOpen = true },
     close: () => { state.isOpen = false }
   }

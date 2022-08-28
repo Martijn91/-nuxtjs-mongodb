@@ -41,7 +41,9 @@ import { Db } from 'mongodb';
       </div>
     </div>
     <query-builder :selection-state="state" @query="query.launch" @update:payload="(val) => state.payload = val" @remove="(key) => reset[key]()" />
-    <base-flyout ref="flyout" />
+    <base-flyout ref="flyout">
+      <code>{{ state.resData }}</code>
+    </base-flyout>
   </div>
 </template>
 
@@ -54,7 +56,8 @@ const state = reactive({
   collection: null,
   dbOperation: null,
   collOperation: null,
-  payload: null
+  payload: null,
+  resData: null
 })
 
 const database = reactive({
@@ -126,17 +129,21 @@ const reset = {
 }
 
 const query = {
-  composable: () => {
-    return state.collOperation
-      ? async () => await $mongo[state.database][state.collection][state.collOperation](state.payload)
-      : state.dbOperation
-        ? async () => await $mongo[state.database][state.dbOperation](state.payload)
-        : console.error('Please choose operation')
-  },
   launch: async () => {
-    const res = await query.composable()()
-    console.log(res)
-    // flyout.value.open()
+    try {
+      if (state.collOperation) {
+        state.resData = await $mongo[state.database][state.collection][state.collOperation](state.payload)
+      } else if (state.dbOperation) {
+        state.resData = await $mongo[state.database][state.dbOperation](state.payload)
+      } else {
+        console.log('MongoDB module -- please provide operation')
+      }
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.log(e)
+    } finally {
+      flyout.value.open()
+    }
   }
 }
 
