@@ -48,11 +48,12 @@ import { Db } from 'mongodb';
         </p>
         <code v-else><textarea
           id=""
+          v-model="textAreaVal"
           name="response"
           disabled
           cols="30"
           rows="10"
-        >{{ prettify(state.resData?.data) }}</textarea>
+        />
         </code>
       </div>
     </base-flyout>
@@ -95,12 +96,11 @@ const operation = reactive({
   }
 })
 
-function prettify (json) {
-  if (!json) { return 'loading...' }
-  const str = JSON.stringify(json).trim()
-  const prsd = JSON.parse(str)
-  return prsd
-}
+const textAreaVal = computed(() => {
+  if (!state.resData?.data) { return 'loading...' } else {
+    return JSON.parse(JSON.stringify(state.resData?.data))
+  }
+})
 
 const select = {
   database: (dbName) => {
@@ -150,11 +150,21 @@ const reset = {
 const query = {
   isLoading: computed(() => !!state.resData?.pending?.value),
   launch: async () => {
+    state.resData = null
     try {
       if (state.collOperation) {
-        state.resData = await $mongo[state.database][state.collection][state.collOperation](state.payload)
+        await $mongo[state.database][state.collection][state.collOperation](state.payload).then((res) => {
+          state.resData = res?.data
+        }).catch((e) => {
+          console.log(e)
+        })
       } else if (state.dbOperation) {
-        state.resData = await $mongo[state.database][state.dbOperation](state.payload)
+        await $mongo[state.database][state.dbOperation](state.payload).then((res) => {
+          state.resData = res?.data
+        }).catch((e) => {
+          console.log(e)
+        })
+        return data
       } else {
         console.log('MongoDB module -- please provide operation')
       }
@@ -163,10 +173,8 @@ const query = {
       console.log(e)
     } finally {
       flyout.value.open()
-      query.refresh()
     }
-  },
-  refresh: () => refreshNuxtData(state.resData.data)
+  }
 
 }
 
