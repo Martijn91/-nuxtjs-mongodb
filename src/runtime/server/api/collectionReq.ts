@@ -25,7 +25,6 @@ export default defineEventHandler(async (event) => {
     try {
       const dbConnect = await connection.db(req.dbName)
       const collConnect = await dbConnect.collection(req.collName)
-      console.log('🚀 ~ file: collectionReq.ts ~ line 28 ~ run ~ collConnect', collConnect)
       const res = await collConnect[req.func](req.payload)
       return res
     } catch (e) {
