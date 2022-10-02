@@ -1,6 +1,6 @@
 <a href="https://www.mongodb.com/" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/MongoDB_Logo.svg/2560px-MongoDB_Logo.svg.png" alt="MongoDB" width="150" /></a>
 <a href="https://v3.nuxtjs.org/" target="_blank"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Nuxt_logo.svg/1200px-Nuxt_logo.svg.png" alt="Nuxt" width="150" /></a>
-# MongoDB Nuxt Module
+# MongoDB Nuxt Module 
 
 MongoDB Nuxt (3) Module to connect Nuxt Front-end to a MongoDB Database using Nitro server engine and global defined Nuxt plugins for a fast, easy and extensive integration.
 
@@ -19,7 +19,7 @@ MongoDB Nuxt (3) Module to connect Nuxt Front-end to a MongoDB Database using Ni
 In order to use this module, please provide the following steps.
 
 
-### 1. Add dependancy
+### 1. ~~Add dependancy~~ - not available as npm package (yet)
 
 Using yarn:
 ```
